@@ -59,11 +59,9 @@ const projects: Project[] = [
 
 const ProjectRoll = () => {
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
-  const [flashProject, setFlashProject] = useState<string | null>(null);
 
   const handleHover = (projectId: string) => {
-    setFlashProject(projectId);
-    setTimeout(() => setFlashProject(null), 150);
+    // Eski "flash" kodlarını sildim, artık doğrudan hover durumunu set ediyoruz.
     setHoveredProject(projectId);
   };
 
@@ -80,15 +78,15 @@ const ProjectRoll = () => {
         <span className="flex-1 h-[1px] bg-border" />
       </div>
 
-      {/* Background flash effect */}
-      {flashProject && currentProject?.image && (
+      {/* Background Effect (Artık hoveredProject'e bağlı, yani kalıcı) */}
+      {hoveredProject && currentProject?.image && (
         <div
-          className="fixed inset-0 z-0 flash-overlay pointer-events-none"
+          className="fixed inset-0 z-0 flash-overlay pointer-events-none transition-opacity duration-500"
           style={{
             backgroundImage: `url(${currentProject.image})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            opacity: 0.3,
+            opacity: 0.3, // Parlaklığı buradan kısabilirsin (0.1 - 1.0 arası)
           }}
         />
       )}
@@ -110,7 +108,7 @@ const ProjectRoll = () => {
         </div>
       )}
 
-      {/* Image preview overlay */}
+      {/* Image preview overlay (Küçük kutu) */}
       {hoveredProject && currentProject?.image && !currentProject?.codeSnippet && (
         <div className="fixed top-1/2 right-8 -translate-y-1/2 w-[400px] pointer-events-none z-10 hidden lg:block">
           <div className="border border-accent overflow-hidden">

@@ -1,3 +1,15 @@
+import { useState } from 'react';
+
+interface Project {
+  id: string;
+  name: string;
+  year: string;
+  category: string;
+  description: string;
+  image?: string;
+  codeSnippet?: string;
+}
+
 const projects: Project[] = [
   {
     id: 'imperial-archive',
@@ -24,7 +36,7 @@ const projects: Project[] = [
     year: '2024',
     category: 'FULL STACK / DATA',
     description: 'High-performance film analysis infrastructure built with FastAPI and Supabase. Features complex Pydantic validation pipelines and async data processing.',
-    image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=800&fit=crop', // Sinematik/Veri görseli
+    image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=800&fit=crop',
     codeSnippet: `class FilmSchema(BaseModel):
     title: str
     metadata: Dict[str, Any]
@@ -79,3 +91,105 @@ async def ingest_film(film: FilmSchema, db: AsyncSession):
         altitude += velocity * dt`,
   },
 ];
+
+const ProjectRoll = () => {
+  const [hoveredProject, setHoveredProject] = useState<string | null>(null);
+
+  const handleHover = (projectId: string) => {
+    setHoveredProject(projectId);
+  };
+
+  const currentProject = projects.find((p) => p.id === hoveredProject);
+
+  return (
+    <section className="min-h-screen py-24 px-4 md:px-8 relative">
+      <div className="mb-16 flex items-center gap-4">
+        <span className="text-accent font-mono text-sm">01</span>
+        <h2 className="font-display font-bold text-2xl md:text-3xl uppercase tracking-wider">
+          Selected Works
+        </h2>
+        <span className="flex-1 h-[1px] bg-border" />
+      </div>
+
+      {hoveredProject && currentProject?.image && (
+        <div
+          className="fixed inset-0 z-0 flash-overlay pointer-events-none transition-opacity duration-500"
+          style={{
+            backgroundImage: `url(${currentProject.image})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.3,
+          }}
+        />
+      )}
+
+      {hoveredProject && currentProject?.codeSnippet && (
+        <div className="fixed top-1/2 right-8 -translate-y-1/2 w-[400px] pointer-events-none z-10 hidden lg:block">
+          <div className="bg-card border border-border p-6 font-mono text-sm terminal-bg scanline">
+            <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+              <span className="w-3 h-3 rounded-full bg-destructive" />
+              <span className="w-3 h-3 rounded-full bg-accent/50" />
+              <span className="w-3 h-3 rounded-full bg-accent" />
+              <span className="ml-2">{currentProject.name}.py</span>
+            </div>
+            <pre className="text-accent whitespace-pre-wrap leading-relaxed">
+              {currentProject.codeSnippet}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {hoveredProject && currentProject?.image && !currentProject?.codeSnippet && (
+        <div className="fixed top-1/2 right-8 -translate-y-1/2 w-[400px] pointer-events-none z-10 hidden lg:block">
+          <div className="border border-accent overflow-hidden">
+            <img
+              src={currentProject.image}
+              alt={currentProject.name}
+              className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-500"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="relative z-20">
+        {projects.map((project, index) => (
+          <div
+            key={project.id}
+            className="group border-t border-border py-8 md:py-12 transition-colors duration-300 hover:bg-secondary/30"
+            onMouseEnter={() => handleHover(project.id)}
+            onMouseLeave={() => setHoveredProject(null)}
+            data-hover
+          >
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+              <span className="font-mono text-xs text-muted-foreground w-8">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 className="font-display font-black text-4xl md:text-6xl lg:text-7xl uppercase tracking-tighter flex-1 transition-all duration-300 group-hover:text-accent group-hover:translate-x-4">
+                {project.name}
+              </h3>
+              <div className="flex items-center gap-6 font-mono text-xs text-muted-foreground">
+                <span className="px-2 py-1 border border-border">
+                  {project.category}
+                </span>
+                <span>{project.year}</span>
+              </div>
+            </div>
+            <div
+              className={`overflow-hidden transition-all duration-500 ${
+                hoveredProject === project.id
+                  ? 'max-h-20 opacity-100 mt-4'
+                  : 'max-h-0 opacity-0'
+              }`}
+            >
+              <p className="font-mono text-sm text-muted-foreground pl-8 md:pl-16 max-w-xl">
+                {project.description}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+export default ProjectRoll;

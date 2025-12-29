@@ -2,58 +2,35 @@ import { useEffect, useState } from 'react';
 
 const CustomCursor = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
+  const [isPointer, setIsPointer] = useState(false);
 
   useEffect(() => {
-    const updatePosition = (e: MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
-      setIsVisible(true);
-    };
-
-    const handleMouseEnter = () => setIsVisible(true);
-    const handleMouseLeave = () => setIsVisible(false);
-
-    const handleHoverStart = (e: MouseEvent) => {
+      
       const target = e.target as HTMLElement;
-      if (target.closest('a, button, [data-hover]')) {
-        setIsHovering(true);
-      }
+      setIsPointer(
+        window.getComputedStyle(target).cursor === 'pointer' ||
+        target.tagName.toLowerCase() === 'a' ||
+        target.tagName.toLowerCase() === 'button'
+      );
     };
 
-    const handleHoverEnd = () => setIsHovering(false);
-
-    window.addEventListener('mousemove', updatePosition);
-    document.addEventListener('mouseenter', handleMouseEnter);
-    document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('mouseover', handleHoverStart);
-    document.addEventListener('mouseout', handleHoverEnd);
-
-    return () => {
-      window.removeEventListener('mousemove', updatePosition);
-      document.removeEventListener('mouseenter', handleMouseEnter);
-      document.removeEventListener('mouseleave', handleMouseLeave);
-      document.removeEventListener('mouseover', handleHoverStart);
-      document.removeEventListener('mouseout', handleHoverEnd);
-    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  if (!isVisible) return null;
-
   return (
+    // 🔥 KRİTİK HAMLE: 'hidden lg:block' ekledik.
+    // Bu sayede mobilde kod çalışsa bile ekrana çizilmez.
     <div
-      className="fixed pointer-events-none z-[9999] mix-blend-difference"
+      className="hidden lg:block fixed top-0 left-0 w-8 h-8 rounded-full border border-accent pointer-events-none z-50 transition-transform duration-100 ease-out mix-blend-difference"
       style={{
-        left: position.x,
-        top: position.y,
-        transform: 'translate(-50%, -50%)',
+        transform: `translate(${position.x - 16}px, ${position.y - 16}px) scale(${isPointer ? 1.5 : 1})`,
+        backgroundColor: isPointer ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
       }}
     >
-      <div
-        className={`rounded-full bg-foreground transition-all duration-200 ease-out ${
-          isHovering ? 'w-24 h-24' : 'w-10 h-10'
-        }`}
-      />
+      <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-accent rounded-full -translate-x-1/2 -translate-y-1/2" />
     </div>
   );
 };

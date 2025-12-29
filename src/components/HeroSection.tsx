@@ -1,69 +1,130 @@
-import { ArrowDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 const HeroSection = () => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setMousePos({
+          x: ((e.clientX - rect.left) / rect.width) * 100,
+          y: ((e.clientY - rect.top) / rect.height) * 100,
+        });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Mouse hareketine göre metni yamultan efekt
+  const distortStyle = isHovered
+    ? {
+        filter: `url(#liquid-filter)`,
+        transform: `translate(${(mousePos.x - 50) * 0.05}px, ${(mousePos.y - 50) * 0.05}px)`, // Hızını biraz azalttım, daha tok dursun
+      }
+    : {};
+
   return (
-    <section className="min-h-screen flex flex-col justify-center px-4 md:px-8 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
+    <section
+      ref={containerRef}
+      className="min-h-screen flex flex-col justify-center relative overflow-hidden px-4 md:px-8 bg-background"
+    >
+      {/* SVG Filter for liquid effect */}
+      <svg className="absolute w-0 h-0">
+        <defs>
+          <filter id="liquid-filter">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.015"
+              numOctaves="3"
+              result="noise"
+              seed="1"
+            >
+              <animate
+                attributeName="baseFrequency"
+                dur="3s"
+                values="0.015;0.025;0.015"
+                repeatCount="indefinite"
+              />
+            </feTurbulence>
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="30"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </defs>
+      </svg>
 
-      <div className="max-w-6xl mx-auto w-full z-10">
-        <div className="mb-8 overflow-hidden">
-          <span className="inline-block text-accent font-mono text-sm tracking-widest animate-fade-in">
-            // SYSTEM_ARCHITECT :: 2800MHZ
+      {/* Main title */}
+      <div
+        className="relative transition-all duration-100 ease-out z-10"
+        style={distortStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        data-hover
+      >
+        <h1 className="font-display font-black text-[11vw] md:text-[13vw] leading-[0.85] tracking-tighter text-foreground uppercase select-none">
+          {/* Kelime 1: SYSTEMS */}
+          <span className="block glitch-text relative" data-text="SYSTEMS">
+            SYSTEMS
           </span>
-        </div>
-
-        <h1 className="font-display font-black text-6xl md:text-8xl lg:text-9xl tracking-tighter mb-8">
-          <span className="block overflow-hidden">
-            <span className="block animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              BUILDING
-            </span>
+          
+          {/* Kelime 2: INTEL (İstihbarat vurgusu) */}
+          <span className="block text-stroke text-transparent hover:text-accent transition-colors duration-300">
+            / INTEL /
           </span>
-          <span className="block overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/50">
-            <span className="block animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              SYSTEMS &
-            </span>
-          </span>
-          <span className="block overflow-hidden">
-            <span className="block animate-slide-up text-accent" style={{ animationDelay: '0.3s' }}>
-              SIMULATIONS
+          
+          {/* Kelime 3: CHAOS (Simülasyon vurgusu) */}
+          <span className="block relative">
+            CHAOS
+            <span className="absolute -right-4 top-0 text-accent text-[3vw] font-mono animate-pulse">
+              *
             </span>
           </span>
         </h1>
+      </div>
 
-        <div className="max-w-2xl animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <p className="font-mono text-sm md:text-base text-muted-foreground leading-relaxed mb-12">
-            I bridge the gap between <span className="text-foreground font-bold">Enterprise Architecture</span> and <span className="text-foreground font-bold">Scientific Simulation</span>. 
-            Currently architecting AI forensics platforms and biological agents using Python, Rust & Modern Web Technologies.
+      {/* Subtitle & Status */}
+      <div className="mt-12 md:mt-16 flex flex-col md:flex-row md:items-end md:justify-between gap-8 z-10">
+        <div className="max-w-md space-y-4">
+          <p className="font-mono text-sm md:text-base text-muted-foreground">
+            <span className="text-accent mr-2">::</span>
+            Architecting <span className="text-foreground font-bold">AI Forensics</span> & <span className="text-foreground font-bold">Biological Simulations</span>.
           </p>
+          <p className="font-mono text-xs text-muted-foreground/60">
+            "Landing Page lies, Payload doesn't."
+          </p>
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <a 
-              href="#projects" 
-              className="group flex items-center gap-2 px-6 py-3 bg-foreground text-background font-mono text-sm hover:bg-foreground/90 transition-colors"
-            >
-              VIEW_OPERATIONS
-              <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
-            </a>
-            <a 
-              href="https://github.com/2800mhz" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="px-6 py-3 border border-border text-foreground font-mono text-sm hover:bg-secondary/50 transition-colors"
-            >
-              GITHUB_PROFILE
-            </a>
-          </div>
+        <div className="flex items-center gap-4">
+          <span className="w-12 h-[1px] bg-accent animate-pulse" />
+          <span className="font-mono text-xs text-muted-foreground">
+            INITIALIZING...
+          </span>
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-12 left-4 md:left-8 animate-bounce hidden md:block">
-        <span className="font-mono text-xs text-muted-foreground writing-vertical-rl rotate-180">
-          SCROLL_TO_EXPLORE
-        </span>
+      {/* Decorative Technical Data */}
+      <div className="absolute top-8 right-8 font-mono text-[10px] md:text-xs text-muted-foreground/40 hidden md:block text-right">
+        <div>SYS.STATUS: ONLINE</div>
+        <div>LAT: 37.8716° N</div> {/* Konya Koordinatları ;) */}
+        <div>LON: 32.4846° E</div>
+        <div>RAM: OPTIMIZED</div>
       </div>
+
+      <div className="absolute bottom-8 left-8 font-mono text-xs text-accent/50">
+        2800MHZ // EST. 2025
+      </div>
+      
+      {/* Arka plan için hafif bir grid (Opsiyonel ama havayı değiştirir) */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
     </section>
   );
 };
